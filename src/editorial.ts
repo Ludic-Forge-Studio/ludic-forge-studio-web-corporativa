@@ -77,7 +77,7 @@ export const editorial: Record<string, Editorial> = {
     image: imagery.partida,
     alt: "Una partida compartida en torno a una mesa de juego",
     links: [
-      ["Preparar una consulta", "/contacto?tema=Profesionales"],
+      ["Planificar un espacio", "/profesionales/consulta"],
       ["Explorar formatos", "/mesas"],
     ],
     blocks: [

@@ -73,6 +73,11 @@ export const router = createRouter({
           "Explore LudicForge Studio’s conceptual collection of convertible gaming tables and modular furniture.",
       },
     },
+    {
+      path: "/profesionales/consulta",
+      component: () => import("./ProfessionalBriefView.vue"),
+      meta: { title: "Consulta profesional" },
+    },
     { path: "/buscar", component: catalog, meta: { title: "Buscar" } },
     {
       path: "/:pathMatch(.*)*",
