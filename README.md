@@ -17,4 +17,4 @@ npm run dev
 
 Importa el repositorio desde Vercel con la rama `main` y la raíz del proyecto. Usa Node.js 22.x. El archivo `vercel.json` configura Vite, la instalación con `npm ci`, la salida en `dist/` y la reescritura necesaria para abrir directamente URLs de Vue Router. El build funciona sin secretos. Si cambia el dominio canónico, actualiza `VITE_SITE_URL`, los metadatos de `index.html`, el sitemap y `robots.txt`. GitHub Actions valida lint, tipos y build.
 
-Consulta [la arquitectura](docs/ARCHITECTURE.md) y [el roadmap](docs/ROADMAP.md).
+Consulta [el índice de documentación](docs/README.md) y [el roadmap](docs/roadmap.md).
