@@ -18,7 +18,11 @@ export const router = createRouter({
     {
       path: "/",
       component: Home,
-      meta: { title: "Mesas de juego convertibles" },
+      meta: {
+        title: "Mesas de comedor convertibles para juegos de mesa",
+        description:
+          "Descubre Classic, el concepto de mesa de comedor con tablero desmontable y superficie de juego rebajada de LudicForge Studio.",
+      },
     },
     ...(["mesas", "accesorios", "mobiliario"] as const).flatMap((category) => [
       {
@@ -92,20 +96,35 @@ router.afterEach((to) => {
     ? catalogRepository.find(String(to.meta.category), String(to.params.slug))
     : undefined;
   const title =
-    (product?.name ?? to.meta.title ?? "Producto no encontrado") +
+    (product?.slug === "classic"
+      ? "Classic, concepto de mesa de juego convertible"
+      : (product?.name ?? to.meta.title ?? "Producto no encontrado")) +
     " · LudicForge Studio";
   const description = String(
-    product?.description ??
-      to.meta.description ??
-      "Descubre las mesas de juego convertibles, los accesorios modulares y el mobiliario de LudicForge Studio.",
+    product?.slug === "classic"
+      ? "Explora Classic, una mesa de comedor convertible en estudio. Descubre el tablero desmontable, compara formatos y prepara una consulta."
+      : (product?.description ??
+          to.meta.description ??
+          "Descubre las mesas de juego convertibles, los accesorios modulares y el mobiliario de LudicForge Studio."),
   );
   const url = new URL(to.path, site).href;
   document.title = title;
+  const noIndex =
+    to.meta.missing ||
+    (to.params.slug && !product) ||
+    /^\/(buscar|carrito|checkout|cuenta|taller-local)(\/|$)/.test(to.path);
+  document
+    .querySelector('[name="robots"]')
+    ?.setAttribute("content", noIndex ? "noindex, follow" : "index, follow");
   for (const [selector, value] of [
     ["[name=description]", description],
     ['[property="og:title"]', title],
     ['[property="og:description"]', description],
     ['[property="og:url"]', url],
+    [
+      '[property="og:image"]',
+      new URL(product?.image.src ?? "/images/hero.jpg", site).href,
+    ],
   ]) {
     document.querySelector(selector)?.setAttribute("content", value);
   }
