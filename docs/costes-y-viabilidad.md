@@ -28,6 +28,8 @@ Fijo mensual estimado, conservador/base/favorable: taller y suministros 650/450/
 
 ## Inversión inicial y decisión
 
+El rango público revisado de Classic es **579–699 € con IVA, más transporte**. Para compararlo con el modelo de arriba, el coste base sin los 65 € de envío es de 381 €. A 579 €, la contribución estimada es de 97,51 € (20,4 %). Usaría **619 €** como primer PVP a validar para la versión estándar, con un margen estimado del 25,5 % y un techo de coste variable de 383,68 € sin envío para mantener el 25 %. El extremo bajo del rango requiere reducir costes o aceptar un margen menor.
+
 | Partida de validación | Bajo | Base | Alto |
 | --- | ---: | ---: | ---: |
 | Materiales del prototipo | 180 | 280 | 450 |

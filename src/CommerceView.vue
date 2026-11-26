@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { ClipboardList, ShoppingBag, UserRound } from "lucide-vue-next";
 import { useDrafts, type DemoOrder } from "./drafts";
 import { money } from "./catalog";
+import CheckoutPayment from "./CheckoutPayment.vue";
 const route = useRoute();
 const router = useRouter();
 const orderError = ref(false);
@@ -71,6 +72,7 @@ async function submitDemo() {
 const drafts = useDrafts();
 const cart = computed(() => route.path === "/carrito");
 const checkout = computed(() => route.path === "/checkout");
+const paymentEnabled = import.meta.env.VITE_CHECKOUT === "1";
 const orders = computed(() => route.path === "/cuenta/pedidos");
 watch(
   orders,
@@ -102,12 +104,19 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
     <template v-if="cart || checkout">
       <p>
         {{
-          checkout
-            ? "Revisa los artículos y las opciones que has guardado. La venta abrirá cuando el catálogo esté validado."
-            : "Guarda productos y configuraciones mientras exploras el catálogo. Se conservan en este navegador."
+          checkout && paymentEnabled
+            ? "Revisa tu selección y calcula el total con envío."
+            : checkout
+              ? "Revisa los artículos y las opciones que has guardado. La venta abrirá cuando el catálogo esté validado."
+              : "Guarda productos y configuraciones mientras exploras el catálogo. Se conservan en este navegador."
         }}
       </p>
-      <div v-if="drafts.lines.length" class="commerce-grid">
+      <CheckoutPayment
+        v-if="
+          checkout && paymentEnabled && !drafts.lines.length && route.query.pago
+        "
+      />
+      <div v-else-if="drafts.lines.length" class="commerce-grid">
         <ul class="line-list" aria-label="Artículos de tu selección">
           <li
             v-for="line in drafts.lines"
@@ -199,14 +208,15 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
           <p v-if="drafts.estimate.unpriced" class="note">
             Unidades pendientes de precio · {{ drafts.estimate.unpriced }}
           </p>
-          <p class="note">Envío e impuestos pendientes de confirmar.</p>
+          <p class="note">Precios estimados con IVA. Envío por confirmar.</p>
           <RouterLink v-if="cart" class="button" to="/checkout"
             >Revisar selección</RouterLink
           ><RouterLink v-else class="button outline" to="/carrito"
             >Editar selección</RouterLink
           >
+          <CheckoutPayment v-if="checkout && paymentEnabled" />
           <button
-            v-if="checkout"
+            v-else-if="checkout"
             class="button"
             type="button"
             @click="submitDemo"
@@ -214,7 +224,7 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
           >
             Crear pedido de prueba
           </button>
-          <p v-if="checkout" class="note">
+          <p v-if="checkout && !paymentEnabled" class="note">
             {{
               serverEnabled
                 ? "Pedido en el entorno de pruebas local. Sin cobro, envío ni datos personales."

@@ -1,0 +1,13 @@
+{
+  "store": "ludic-forge",
+  "testOnly": true,
+  "products": [
+    {
+      "category": "mesas",
+      "slug": "classic",
+      "options": [],
+      "unitCents": 59900
+    }
+  ],
+  "shipping": { "08": 4900 }
+}

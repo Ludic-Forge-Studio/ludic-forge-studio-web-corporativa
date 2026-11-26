@@ -1,0 +1,1 @@
+- [ ] Cuando la web esté terminada, validar con Redsys y beply y activar el [checkout online](docs/CHECKOUT-REDSYS.md).

@@ -46,7 +46,7 @@ try {
   const created = await post(2);
   assert.equal(created.status, 201);
   const order = await created.json();
-  assert.equal(order.estimate.low, 119800);
+  assert.deepEqual(order.estimate, { low: 115800, high: 139800, unpriced: 0 });
   assert.equal((await (await post(2)).json()).reference, order.reference);
   assert.equal(
     (await (await fetch(url, { headers: { cookie: session } })).json()).length,

@@ -1,7 +1,4 @@
 export const primary = [
-  ["Mesas", "/mesas"],
-  ["Accesorios", "/accesorios"],
-  ["Mobiliario", "/mobiliario"],
   ["Configura tu mesa", "/configurador"],
   ["Nuestra marca", "/nuestra-marca"],
 ];

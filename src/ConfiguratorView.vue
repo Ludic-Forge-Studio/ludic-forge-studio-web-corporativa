@@ -193,8 +193,8 @@ function save() {
           </p>
         </div>
         <p v-if="estimate" class="note">
-          Estimación de los modelos base · {{ estimate }}. Opciones, envío e
-          impuestos por definir.
+          Estimación de los modelos base con IVA · {{ estimate }}. Opciones y
+          envío por confirmar.
         </p>
         <details class="topic">
           <summary>Compartir esta configuración</summary>
