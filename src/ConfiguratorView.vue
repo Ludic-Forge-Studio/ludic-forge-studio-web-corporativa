@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { computed, ref, watch } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import { catalogRepository, finishes, mats, money } from "./catalog";
 import { useDrafts } from "./drafts";
 import SwatchPicker from "./SwatchPicker.vue";
 const route = useRoute();
+const router = useRouter();
 const drafts = useDrafts();
 const tables = catalogRepository.list("mesas");
 const accessories = catalogRepository.list("accesorios");
@@ -15,6 +16,17 @@ const lights = ref(false);
 const selected = ref<string[]>([]);
 const quantity = ref(1);
 const saved = ref(false);
+const copied = ref(false);
+const normalizedQuantity = computed(() =>
+  Number.isInteger(quantity.value)
+    ? Math.max(1, Math.min(20, quantity.value))
+    : 1,
+);
+const estimate = computed(() =>
+  product.value.rangeCents
+    ?.map((cents) => money(cents * normalizedQuantity.value))
+    .join("–"),
+);
 const product = computed(
   () => tables.find((table) => table.slug === model.value) ?? tables[0],
 );
@@ -34,6 +46,18 @@ watch(
     finish.value =
       finishes.find((option) => option.name === query.acabado)?.name ??
       finishes[0].name;
+    const requested =
+      typeof query.accesorios === "string" ? query.accesorios.split(",") : [];
+    selected.value = supported.value
+      ? accessories
+          .filter((item) => requested.includes(item.slug))
+          .map((item) => item.slug)
+      : [];
+    lights.value = supported.value && query.luz === "1";
+    quantity.value =
+      typeof query.unidades === "string" && /^\d{1,2}$/.test(query.unidades)
+        ? Math.max(1, Math.min(20, Number(query.unidades)))
+        : 1;
     mat.value =
       mats.find((option) => option.name === query.tapete)?.name ?? mats[0].name;
   },
@@ -45,10 +69,38 @@ watch(supported, (available) => {
     selected.value = [];
   }
 });
-watch(
-  [model, finish, mat, lights, selected, quantity],
-  () => (saved.value = false),
+watch([model, finish, mat, lights, selected, quantity], () => {
+  saved.value = false;
+  copied.value = false;
+});
+const shareUrl = computed(
+  () =>
+    new URL(
+      router.resolve({
+        path: "/configurador",
+        query: {
+          modelo: model.value,
+          acabado: finish.value,
+          tapete: mat.value,
+          unidades: normalizedQuantity.value,
+          luz: supported.value && lights.value ? "1" : undefined,
+          accesorios:
+            supported.value && selected.value.length
+              ? selected.value.join(",")
+              : undefined,
+        },
+      }).href,
+      window.location.origin,
+    ).href,
 );
+async function copyConfiguration() {
+  try {
+    await navigator.clipboard.writeText(shareUrl.value);
+    copied.value = true;
+  } catch {
+    copied.value = false;
+  }
+}
 function save() {
   const options = [finish.value, "Tapete " + mat.value];
   if (supported.value) {
@@ -147,6 +199,30 @@ function save() {
             }}
           </p>
         </div>
+        <p v-if="estimate" class="note">
+          Estimación de los modelos base · {{ estimate }}. Opciones, envío e
+          impuestos por definir.
+        </p>
+        <details class="topic">
+          <summary>Compartir esta configuración</summary>
+          <div class="email-row">
+            <input
+              type="url"
+              readonly
+              :value="shareUrl"
+              aria-label="Enlace a la configuración"
+              @focus="($event.target as HTMLInputElement).select()"
+            />
+            <button
+              class="button outline"
+              type="button"
+              @click="copyConfiguration"
+            >
+              Copiar enlace
+            </button>
+          </div>
+          <p v-if="copied" role="status">Enlace copiado.</p>
+        </details>
         <button class="button">Guardar configuración</button>
         <p v-if="saved" role="status">
           Configuración guardada.
