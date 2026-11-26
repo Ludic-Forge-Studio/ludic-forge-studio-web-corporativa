@@ -50,6 +50,11 @@ export const router = createRouter({
       component: () => import("./ConfiguratorView.vue"),
       meta: { title: "Configura tu mesa" },
     },
+    {
+      path: "/comparar",
+      component: () => import("./CompareView.vue"),
+      meta: { title: "Comparar mesas" },
+    },
     { path: "/buscar", component: catalog, meta: { title: "Buscar" } },
     {
       path: "/:pathMatch(.*)*",

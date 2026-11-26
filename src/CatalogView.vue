@@ -120,6 +120,9 @@ function submit() {
         </div>
       </form>
     </template>
+    <RouterLink v-if="category === 'mesas'" class="text-link" to="/comparar"
+      >Comparar modelos</RouterLink
+    >
     <div class="catalog-toolbar">
       <div
         v-if="Object.keys(filters).length"
