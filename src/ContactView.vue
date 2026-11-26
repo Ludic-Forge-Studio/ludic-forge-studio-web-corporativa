@@ -6,12 +6,16 @@ const topics = ["Mesas y accesorios", "Profesionales", "Otra consulta"];
 const topic = ref(
   topics.find((item) => item === route.query.tema) ?? topics[0],
 );
+const classic = computed(() => route.query.modelo === "classic");
 const message = ref("");
 const prepared = ref("");
 const canPrepare = computed(() => message.value.trim().length >= 10);
 function prepare() {
   if (canPrepare.value)
-    prepared.value = topic.value + "\n\n" + message.value.trim();
+    prepared.value =
+      (classic.value ? "Consulta sobre Classic" : topic.value) +
+      "\n\n" +
+      message.value.trim();
 }
 function download() {
   const url = URL.createObjectURL(
@@ -31,7 +35,7 @@ function download() {
     </nav>
     <div class="split contact-layout">
       <div>
-        <h1>Contacto</h1>
+        <h1>{{ classic ? "Consulta sobre Classic" : "Contacto" }}</h1>
         <p>
           El canal de atención está pendiente de apertura. Puedes preparar y
           descargar el texto de tu consulta desde aquí.
@@ -64,7 +68,11 @@ function download() {
           minlength="10"
           maxlength="2000"
           aria-describedby="message-help"
-          placeholder="Cuéntanos qué estás buscando."
+          :placeholder="
+            classic
+              ? 'Espacio disponible, tipos de partida y dudas sobre la conversión.'
+              : 'Cuéntanos qué estás buscando.'
+          "
         />
         <p id="message-help" class="note">
           Entre 10 y 2.000 caracteres. Evita incluir datos personales.

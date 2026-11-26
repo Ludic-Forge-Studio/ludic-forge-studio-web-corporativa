@@ -100,6 +100,10 @@ function save() {
         <p class="eyebrow">Concepto en desarrollo</p>
         <h1>{{ product.name }}</h1>
         <p>{{ product.description }}</p>
+        <p v-if="product.slug === 'classic'" class="note">
+          Primer concepto en estudio. La altura útil bajo las tapas, el montaje
+          y la entrega se confirmarán con el prototipo.
+        </p>
         <dl class="spec-list">
           <div v-if="product.dimensions">
             <dt>Formato orientativo</dt>
@@ -122,6 +126,18 @@ function save() {
             <dd>En desarrollo</dd>
           </div>
         </dl>
+        <div class="actions" v-if="product.slug === 'classic'">
+          <RouterLink
+            class="button"
+            :to="{ path: '/contacto', query: { modelo: 'classic' } }"
+            >Preparar consulta sobre Classic</RouterLink
+          >
+          <RouterLink
+            class="text-link"
+            :to="{ path: '/', hash: '#transformacion' }"
+            >Ver la transformación</RouterLink
+          >
+        </div>
         <div class="actions">
           <RouterLink
             v-if="product.category === 'mesas'"

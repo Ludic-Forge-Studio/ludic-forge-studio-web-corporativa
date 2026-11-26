@@ -127,6 +127,11 @@
 .detail-notes {
   padding-top: clamp(1rem, 4vw, 3rem);
 }
+.config-layout > *,
+.product-detail > *,
+.contact-layout > * {
+  min-width: 0;
+}
 .category-name {
   text-transform: capitalize;
 }

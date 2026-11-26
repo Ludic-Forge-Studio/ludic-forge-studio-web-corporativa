@@ -804,8 +804,7 @@ select {
       transform: translateY(-0.4rem);
       transition:
         opacity var(--ease),
-        transform var(--ease),
-        display var(--ease) allow-discrete;
+        transform var(--ease);
       &.open {
         opacity: 1;
         transform: none;

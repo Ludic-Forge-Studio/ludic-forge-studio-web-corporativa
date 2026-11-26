@@ -24,7 +24,7 @@ Modelo para decidir si merece la pena prototipar. Cifras estimadas en euros para
 
 Ingreso neto = PVP / 1,21. Contribución = ingreso neto − variable. Margen = contribución / ingreso neto. Equilibrio = redondeo al alza de fijo / contribución positiva. Los precios son hipótesis para contrastar con hogares, no tarifas. Los escenarios combinan variaciones de precio y coste, no estiman probabilidades.
 
-Fijo mensual estimado, conservador/base/favorable: taller y suministros 650/450/300 €, administración y software 250/150/100 €, atención y herramientas 200/150/100 €. La mano de obra directa ya está en la tabla variable. Equilibrio operativo antes de recuperar desarrollo, impuestos sobre beneficio y coste financiero. Con 1.100 € de inicio, el caso base necesitaría 7 ventas para recuperar ese inicio además de cubrir el fijo mensual correspondiente según el volumen alcanzado.
+Fijo mensual estimado, conservador/base/favorable: taller y suministros 650/450/300 €, administración y software 250/150/100 €, atención y herramientas 200/150/100 €. La mano de obra directa ya está en la tabla variable. Equilibrio operativo antes de recuperar desarrollo, impuestos sobre beneficio y coste financiero. Con 1.100 € de inicio, el caso base necesitaría 7 ventas para recuperar por separado la inversión inicial, o 11 en un mes para recuperar la inversión y cubrir también los 750 € de fijo de ese mes.
 
 ## Inversión inicial y decisión
 
