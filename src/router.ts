@@ -50,6 +50,15 @@ export const router = createRouter({
       meta: { title, description },
     })),
     {
+      path: "/plan-de-fabricacion",
+      component: () => import("./ProductionPlanView.vue"),
+      meta: {
+        title: "Plan de fabricación",
+        description:
+          "Descubre qué mesas convertibles, accesorios modulares y muebles queremos fabricar primero en LudicForge Studio.",
+      },
+    },
+    {
       path: "/configurador",
       component: () => import("./ConfiguratorView.vue"),
       meta: { title: "Configura tu mesa" },

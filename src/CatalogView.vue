@@ -113,6 +113,9 @@ function submit() {
       </nav>
       <h1>{{ collection.title }}</h1>
       <p>{{ collection.intro }}</p>
+      <RouterLink class="text-link" to="/plan-de-fabricacion"
+        >Ver el orden de fabricación</RouterLink
+      >
     </div>
     <img
       :src="collection.image"

@@ -5,6 +5,8 @@
 **Decisión web.** La demostración precede al configurador. La ficha, la comparativa y el borrador de consulta ayudan a evaluar el concepto. El cobro y la captación automatizada quedan para después de validar la oferta.
 
 - [Mercado y alternativas](mercado-y-competencia.md)
+- [Catálogo de la competencia](COMPETENCIA.md)
+- El plan de fabricación se consulta en `/plan-de-fabricacion`. Las fases y propuestas se mantienen en [productionPlan.ts](../src/productionPlan.ts).
 - [Costes y punto de equilibrio](costes-y-viabilidad.md)
 - [UX, estructura y demostración](ux-ui-y-producto.md)
 - [SEO y experimentos](seo-y-marketing.md)

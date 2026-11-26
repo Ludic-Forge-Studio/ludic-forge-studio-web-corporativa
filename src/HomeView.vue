@@ -60,6 +60,8 @@ import TableStory from "./TableStory.vue";
             >Ver la ficha de Classic</RouterLink
           ><RouterLink class="text-link" to="/comparar"
             >Comparar formatos</RouterLink
+          ><RouterLink class="text-link" to="/plan-de-fabricacion"
+            >Ver qué fabricaremos primero</RouterLink
           >
         </div>
       </div>

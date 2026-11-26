@@ -20,6 +20,7 @@ export const footer = [
     links: [
       ["Nuestra historia", "/nuestra-marca"],
       ["Fabricación", "/fabricacion"],
+      ["Plan de fabricación", "/plan-de-fabricacion"],
       ["Materiales", "/materiales"],
       ["Contacto", "/contacto"],
     ],
