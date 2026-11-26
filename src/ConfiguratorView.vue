@@ -2,6 +2,11 @@
 import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { catalogRepository, finishes, mats, money } from "./catalog";
+import {
+  normalizeConfiguration,
+  normalizeQuantity,
+  supportsTableExtras,
+} from "./configuration";
 import { useDrafts } from "./drafts";
 import TablePreview from "./TablePreview.vue";
 import SwatchPicker from "./SwatchPicker.vue";
@@ -18,11 +23,7 @@ const selected = ref<string[]>([]);
 const quantity = ref(1);
 const saved = ref(false);
 const copied = ref(false);
-const normalizedQuantity = computed(() =>
-  Number.isInteger(quantity.value)
-    ? Math.max(1, Math.min(20, quantity.value))
-    : 1,
-);
+const normalizedQuantity = computed(() => normalizeQuantity(quantity.value));
 const estimate = computed(() =>
   product.value.rangeCents
     ?.map((cents) => money(cents * normalizedQuantity.value))
@@ -31,7 +32,7 @@ const estimate = computed(() =>
 const product = computed(
   () => tables.find((table) => table.slug === model.value) ?? tables[0],
 );
-const supported = computed(() => model.value !== "topper");
+const supported = computed(() => supportsTableExtras(model.value));
 const woodColor = computed(
   () => finishes.find((option) => option.name === finish.value)?.color,
 );
@@ -41,26 +42,13 @@ const matColor = computed(
 watch(
   () => route.query,
   (query) => {
-    model.value =
-      tables.find((table) => table.slug === query.modelo)?.slug ??
-      tables[0].slug;
-    finish.value =
-      finishes.find((option) => option.name === query.acabado)?.name ??
-      finishes[0].name;
-    const requested =
-      typeof query.accesorios === "string" ? query.accesorios.split(",") : [];
-    selected.value = supported.value
-      ? accessories
-          .filter((item) => requested.includes(item.slug))
-          .map((item) => item.slug)
-      : [];
-    lights.value = supported.value && query.luz === "1";
-    quantity.value =
-      typeof query.unidades === "string" && /^\d{1,2}$/.test(query.unidades)
-        ? Math.max(1, Math.min(20, Number(query.unidades)))
-        : 1;
-    mat.value =
-      mats.find((option) => option.name === query.tapete)?.name ?? mats[0].name;
+    const configuration = normalizeConfiguration(query);
+    model.value = configuration.product.slug;
+    finish.value = configuration.finish.name;
+    mat.value = configuration.mat.name;
+    selected.value = configuration.accessories.map((item) => item.slug);
+    lights.value = configuration.lights;
+    quantity.value = configuration.quantity;
   },
   { immediate: true },
 );
@@ -112,9 +100,7 @@ function save() {
         .map((item) => item.name + " (por validar)"),
     );
   }
-  const units = Number.isInteger(quantity.value)
-    ? Math.max(1, Math.min(20, quantity.value))
-    : 1;
+  const units = normalizedQuantity.value;
   quantity.value = units;
   drafts.add(product.value, options, units);
   saved.value = true;
