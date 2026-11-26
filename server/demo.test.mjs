@@ -7,6 +7,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const directory = await mkdtemp(join(tmpdir(), "ludicforge-test-"));
+const workshopKey = randomUUID();
 const api = spawn(
   process.execPath,
   ["--experimental-strip-types", "server/demo.mjs"],
@@ -14,6 +15,7 @@ const api = spawn(
     env: {
       ...process.env,
       LUDICFORGE_API_PORT: "0",
+      LUDICFORGE_WORKSHOP_KEY: workshopKey,
       LUDICFORGE_DATA_DIR: directory,
     },
     stdio: ["ignore", "pipe", "inherit"],
@@ -51,6 +53,41 @@ try {
     1,
   );
   assert.deepEqual(await (await fetch(url)).json(), []);
+  const workshop = base + "/api/demo/workshop";
+  assert.equal((await fetch(workshop)).status, 401);
+  const headers = {
+    Authorization: "Bearer " + workshopKey,
+    "Content-Type": "application/json",
+  };
+  const row = {
+    slug: "classic",
+    supplier: "Prueba",
+    cost: 35.25,
+    stock: 3,
+    units: 2,
+    status: "Planificada",
+  };
+  assert.equal(
+    (
+      await fetch(workshop, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify({ ...row, stock: -1 }),
+      })
+    ).status,
+    400,
+  );
+  assert.equal(
+    (
+      await fetch(workshop, {
+        method: "PUT",
+        headers,
+        body: JSON.stringify(row),
+      })
+    ).status,
+    200,
+  );
+  assert.deepEqual(await (await fetch(workshop, { headers })).json(), [row]);
   console.log(
     "Pedidos: validación, recálculo, idempotencia y aislamiento comprobados.",
   );

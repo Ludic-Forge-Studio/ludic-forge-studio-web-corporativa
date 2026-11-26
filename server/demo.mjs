@@ -3,6 +3,7 @@ import { mkdirSync } from "node:fs";
 import { createServer } from "node:http";
 import { resolve } from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import { createWorkshop } from "./workshop.mjs";
 import { catalogRepository } from "../src/catalog.ts";
 
 const directory = resolve(process.env.LUDICFORGE_DATA_DIR || ".local-data");
@@ -100,8 +101,16 @@ function snapshot(rows) {
   return { lines, estimate };
 }
 
+const workshop = createWorkshop(db, catalogRepository);
 const port = Number(process.env.LUDICFORGE_API_PORT || 4317);
 const server = createServer(async (request, response) => {
+  if (request.url === "/api/demo/workshop") {
+    try {
+      return await workshop(request, response, body, respond);
+    } catch {
+      return respond(response, 500, { error: "No se pudo acceder al taller." });
+    }
+  }
   if (request.url !== "/api/demo/orders")
     return respond(response, 404, { error: "Ruta no encontrada." });
   if (request.method === "GET")

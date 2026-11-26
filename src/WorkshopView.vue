@@ -23,6 +23,40 @@ function read(): RecordRow[] {
 }
 const rows = ref(read());
 const feedback = ref("");
+const workshopKey = ref("");
+const connected = ref(false);
+const busy = ref(false);
+async function requestWorkshop(record?: RecordRow) {
+  const response = await fetch("/api/demo/workshop", {
+    method: record ? "PUT" : "GET",
+    headers: {
+      Authorization: "Bearer " + workshopKey.value,
+      ...(record ? { "Content-Type": "application/json" } : {}),
+    },
+    body: record ? JSON.stringify(record) : undefined,
+  });
+  if (!response.ok) throw new Error();
+  return (await response.json()) as RecordRow[];
+}
+async function connect() {
+  busy.value = true;
+  try {
+    rows.value = await requestWorkshop();
+    connected.value = true;
+    choose(form.slug);
+    feedback.value = "Taller compartido conectado.";
+  } catch {
+    feedback.value = "Comprueba la clave y que la API esté en marcha.";
+  } finally {
+    busy.value = false;
+  }
+}
+function disconnect() {
+  connected.value = false;
+  workshopKey.value = "";
+  rows.value = read();
+  choose(form.slug);
+}
 const form = reactive<RecordRow>({
   slug: products[0].slug,
   supplier: "",
@@ -57,7 +91,19 @@ function choose(slug: string) {
   );
   feedback.value = "";
 }
-function save() {
+async function save() {
+  if (connected.value) {
+    busy.value = true;
+    try {
+      rows.value = await requestWorkshop({ ...form });
+      feedback.value = "Ficha guardada en SQLite.";
+    } catch {
+      feedback.value = "No se ha podido guardar la ficha compartida.";
+    } finally {
+      busy.value = false;
+    }
+    return;
+  }
   const next = [
     ...rows.value.filter((row) => row.slug !== form.slug),
     {
@@ -95,6 +141,29 @@ choose(form.slug);
       Registro de trabajo en este navegador. Cambiar una ficha aquí no modifica
       el catálogo público.
     </p>
+    <form v-if="!connected" class="search-form" @submit.prevent="connect">
+      <label for="workshop-key">Clave del taller compartido</label>
+      <div class="email-row">
+        <input
+          id="workshop-key"
+          v-model="workshopKey"
+          type="password"
+          autocomplete="off"
+          minlength="32"
+          required
+        />
+        <button class="button outline" :disabled="busy">Conectar taller</button>
+      </div>
+    </form>
+    <button
+      v-else
+      class="button outline"
+      type="button"
+      :disabled="busy"
+      @click="disconnect"
+    >
+      Volver al registro de este navegador
+    </button>
     <div class="info-grid account-grid">
       <article>
         <h2>Productos registrados</h2>
@@ -190,7 +259,7 @@ choose(form.slug);
         ><select id="workshop-status" v-model="form.status">
           <option v-for="status in statuses" :key="status">{{ status }}</option>
         </select>
-        <button class="button">Guardar ficha</button>
+        <button class="button" :disabled="busy">Guardar ficha</button>
         <p role="status">{{ feedback }}</p>
       </form>
     </div>
