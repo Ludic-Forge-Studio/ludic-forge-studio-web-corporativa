@@ -3,12 +3,9 @@ import { money, type Product } from "./catalog";
 defineProps<{ product: Product; featured?: boolean }>();
 </script>
 <template>
-  <article
-    class="product-card"
-    :class="{ 'product-card-text': !product.image }"
-  >
+  <article class="product-card">
     <RouterLink :to="'/' + product.category + '/' + product.slug">
-      <div v-if="product.image" class="card-image">
+      <div class="card-image">
         <img
           :src="product.image.src"
           :alt="product.image.alt"
@@ -24,7 +21,6 @@ defineProps<{ product: Product; featured?: boolean }>();
           product.dimensions ?? product.format
         }}</span>
       </div>
-      <p v-if="!product.image">{{ product.description }}</p>
       <p v-if="product.rangeCents">
         Precio orientativo · {{ money(product.rangeCents[0]) }}–{{
           money(product.rangeCents[1])

@@ -64,7 +64,7 @@ export interface Product {
   category: ProductCategory;
   description: string;
   availability: ProductAvailability;
-  image?: ProductImage;
+  image: ProductImage;
   format?: string;
   production?: Pick<
     (typeof phases)[number],
@@ -138,7 +138,7 @@ const tables = [
     24900,
   ],
 ] as const;
-const illustratedCatalog: (Product & { image: ProductImage })[] = tables.map(
+const baseCatalog: Omit<Product, "image">[] = tables.map(
   ([slug, name, dimensions, description, min, max]) => ({
     slug,
     name,
@@ -146,32 +146,24 @@ const illustratedCatalog: (Product & { image: ProductImage })[] = tables.map(
     description,
     category: "mesas",
     availability: "propuesta",
-    image: {
-      src: imagery[slug] ?? imagery.juego,
-      alt: "Vista conceptual de la mesa " + name,
-    },
     rangeCents: [min, max],
     shipping: { fulfillment: "bajo-pedido" },
   }),
 );
-illustratedCatalog.push(
+baseCatalog.push(
   ...["Posavasos", "Bandejas", "Portacartas", "Organizadores", "Soportes"].map(
-    (name): Accessory & { image: ProductImage } => ({
+    (name): Omit<Accessory, "image"> => ({
       slug: name.toLowerCase(),
       name,
       category: "accesorios",
       availability: "propuesta",
       description:
         "Accesorio intercambiable para organizar y liberar espacio en la superficie de juego.",
-      image: {
-        src: imagery.modular,
-        alt: "Detalle conceptual del sistema modular",
-      },
       shipping: { fulfillment: "stock" },
     }),
   ),
   ...["Estanterías", "Aparadores", "Módulos auxiliares"].map(
-    (name): Product & { image: ProductImage } => ({
+    (name): Omit<Product, "image"> => ({
       slug: name
         .normalize("NFD")
         .replace(/\p{Diacritic}/gu, "")
@@ -182,10 +174,6 @@ illustratedCatalog.push(
       availability: "propuesta",
       description:
         "Mobiliario complementario para guardar juegos y materiales de partida.",
-      image: {
-        src: imagery.interior,
-        alt: "Mobiliario de salón de madera natural",
-      },
       shipping: { fulfillment: "bajo-pedido" },
     }),
   ),
@@ -193,13 +181,17 @@ illustratedCatalog.push(
 const catalog: Product[] = phases.flatMap(
   ({ products, id, sequence, title, check }) =>
     products.map((proposal) => {
-      const existing = illustratedCatalog.find(
+      const existing = baseCatalog.find(
         (item) =>
           item.category === proposal.category && item.slug === proposal.slug,
       );
       return {
         ...existing,
         ...proposal,
+        image: {
+          src: "/images/productos/" + proposal.slug + ".webp",
+          alt: proposal.name,
+        },
         availability: existing?.availability ?? "propuesta",
         shipping: existing?.shipping ?? { fulfillment: "bajo-pedido" },
         production: { id, sequence, title, check },
@@ -207,9 +199,16 @@ const catalog: Product[] = phases.flatMap(
     }),
 );
 
+const productsBySlug = new Map(
+  catalog.map((product) => [product.slug, product]),
+);
+
 export const catalogRepository = {
   configurable: (category: "mesas" | "accesorios") =>
-    illustratedCatalog.filter((product) => product.category === category),
+    baseCatalog
+      .filter((product) => product.category === category)
+      .map((product) => productsBySlug.get(product.slug))
+      .filter((product) => product !== undefined),
   list: (category?: ProductCategory) =>
     catalog.filter((product) => !category || product.category === category),
   find: (category: string, slug: string) =>

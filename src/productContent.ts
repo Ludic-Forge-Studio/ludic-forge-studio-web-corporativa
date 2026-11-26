@@ -104,10 +104,13 @@ export const details: Record<
   },
 };
 export function productGallery(product: Product) {
-  if (!product.image) return [];
   return product.slug === "classic"
     ? [
         product.image,
+        {
+          src: imagery.classic,
+          alt: "Classic con la superficie de juego descubierta",
+        },
         { src: imagery.comedor, alt: "Classic con tablero de comedor" },
         { src: imagery.hero, alt: "Classic con parte del tablero retirada" },
       ]
