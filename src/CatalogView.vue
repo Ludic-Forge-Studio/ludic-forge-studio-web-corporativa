@@ -4,6 +4,7 @@ import { useRoute, useRouter } from "vue-router";
 import { catalogRepository, type ProductCategory } from "./catalog";
 import { collections, matches } from "./productContent";
 import ProductCard from "./ProductCard.vue";
+import { phases } from "./productionPlan";
 const route = useRoute();
 const router = useRouter();
 const category = computed(
@@ -16,13 +17,6 @@ const query = computed(() =>
   typeof route.query.q === "string" ? route.query.q.trim() : "",
 );
 const input = ref("");
-const formats: Record<string, string> = {
-  classic: "Comedor",
-  compact: "Comedor",
-  grand: "Comedor",
-  lounge: "Salón",
-  topper: "Portátil",
-};
 const categories = {
   mesas: "Mesas",
   accesorios: "Accesorios",
@@ -60,7 +54,7 @@ watch(query, (value) => (input.value = value), { immediate: true });
 const results = computed(() => {
   const products = catalogRepository.list(category.value).filter((product) => {
     const format =
-      category.value === "mesas" ? formats[product.slug] : product.category;
+      category.value === "mesas" ? product.format : product.category;
     return (
       (!filter.value || format === filter.value) &&
       (!query.value ||
@@ -69,7 +63,7 @@ const results = computed(() => {
             product.name,
             product.category,
             product.description,
-            formats[product.slug],
+            product.format,
           ].join(" "),
           query.value,
         ))
@@ -80,10 +74,24 @@ const results = computed(() => {
   if (sort.value === "price")
     products.sort(
       (a, b) =>
-        (a.rangeCents?.[0] ?? Infinity) - (b.rangeCents?.[0] ?? Infinity),
+        (a.rangeCents?.[0] ?? Number.MAX_SAFE_INTEGER) -
+        (b.rangeCents?.[0] ?? Number.MAX_SAFE_INTEGER),
     );
   return products;
 });
+const groups = computed(() =>
+  category.value && sort.value === "featured"
+    ? phases
+        .map(({ id, sequence, title }) => ({
+          id,
+          label: sequence + " · " + title,
+          products: results.value.filter(
+            (product) => product.production?.id === id,
+          ),
+        }))
+        .filter((group) => group.products.length)
+    : [{ id: "results", label: "", products: results.value }],
+);
 const filters = computed(() =>
   category.value === "mesas"
     ? Object.fromEntries(
@@ -175,7 +183,7 @@ function submit() {
       <label
         >Ordenar
         <select v-model="sort">
-          <option value="featured">Destacados</option>
+          <option value="featured">Prioridad de fabricación</option>
           <option value="name">Nombre</option>
           <option v-if="!category || category === 'mesas'" value="price">
             Precio orientativo
@@ -187,13 +195,18 @@ function submit() {
       {{ results.length }} {{ results.length === 1 ? "artículo" : "artículos"
       }}<template v-if="query"> para «{{ query }}»</template>
     </p>
-    <div v-if="results.length" class="product-grid">
-      <ProductCard
-        v-for="product in results"
-        :key="product.category + '/' + product.slug"
-        :product="product"
-        :featured="product.slug === 'classic'"
-      />
+    <div v-if="results.length">
+      <div v-for="group in groups" :key="group.id" class="catalog-phase">
+        <h2 v-if="group.label">{{ group.label }}</h2>
+        <div class="product-grid">
+          <ProductCard
+            v-for="product in group.products"
+            :key="product.category + '/' + product.slug"
+            :product="product"
+            :featured="product.slug === 'classic'"
+          />
+        </div>
+      </div>
     </div>
     <div v-else class="empty-panel">
       <h2>No hay coincidencias</h2>

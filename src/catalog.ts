@@ -1,3 +1,5 @@
+import { phases } from "./productionPlan.ts";
+
 export type ProductCategory = "mesas" | "accesorios" | "mobiliario";
 export type ProductAvailability =
   "activo" | "prototipo" | "próximo" | "propuesta";
@@ -62,7 +64,12 @@ export interface Product {
   category: ProductCategory;
   description: string;
   availability: ProductAvailability;
-  image: ProductImage;
+  image?: ProductImage;
+  format?: string;
+  production?: Pick<
+    (typeof phases)[number],
+    "id" | "sequence" | "title" | "check"
+  >;
   dimensions?: string;
   rangeCents?: readonly [number, number];
   shipping: ShippingInformation;
@@ -131,7 +138,7 @@ const tables = [
     24900,
   ],
 ] as const;
-const catalog: Product[] = tables.map(
+const illustratedCatalog: (Product & { image: ProductImage })[] = tables.map(
   ([slug, name, dimensions, description, min, max]) => ({
     slug,
     name,
@@ -147,9 +154,9 @@ const catalog: Product[] = tables.map(
     shipping: { fulfillment: "bajo-pedido" },
   }),
 );
-catalog.push(
+illustratedCatalog.push(
   ...["Posavasos", "Bandejas", "Portacartas", "Organizadores", "Soportes"].map(
-    (name): Accessory => ({
+    (name): Accessory & { image: ProductImage } => ({
       slug: name.toLowerCase(),
       name,
       category: "accesorios",
@@ -164,7 +171,7 @@ catalog.push(
     }),
   ),
   ...["Estanterías", "Aparadores", "Módulos auxiliares"].map(
-    (name): Product => ({
+    (name): Product & { image: ProductImage } => ({
       slug: name
         .normalize("NFD")
         .replace(/\p{Diacritic}/gu, "")
@@ -183,7 +190,26 @@ catalog.push(
     }),
   ),
 );
+const catalog: Product[] = phases.flatMap(
+  ({ products, id, sequence, title, check }) =>
+    products.map((proposal) => {
+      const existing = illustratedCatalog.find(
+        (item) =>
+          item.category === proposal.category && item.slug === proposal.slug,
+      );
+      return {
+        ...existing,
+        ...proposal,
+        availability: existing?.availability ?? "propuesta",
+        shipping: existing?.shipping ?? { fulfillment: "bajo-pedido" },
+        production: { id, sequence, title, check },
+      };
+    }),
+);
+
 export const catalogRepository = {
+  configurable: (category: "mesas" | "accesorios") =>
+    illustratedCatalog.filter((product) => product.category === category),
   list: (category?: ProductCategory) =>
     catalog.filter((product) => !category || product.category === category),
   find: (category: string, slug: string) =>

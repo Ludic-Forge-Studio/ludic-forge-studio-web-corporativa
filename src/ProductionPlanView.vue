@@ -48,10 +48,11 @@ import { phases, productGroups } from "./productionPlan";
               )"
               :key="item.name"
             >
-              <RouterLink v-if="item.to" :to="item.to" class="text-link">{{
-                item.name
-              }}</RouterLink>
-              <strong v-else>{{ item.name }}</strong>
+              <RouterLink
+                :to="'/' + item.category + '/' + item.slug"
+                class="text-link"
+                >{{ item.name }}</RouterLink
+              >
               <p>{{ item.description }}</p>
             </li>
           </ul>

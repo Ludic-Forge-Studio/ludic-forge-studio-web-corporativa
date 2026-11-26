@@ -104,6 +104,7 @@ export const details: Record<
   },
 };
 export function productGallery(product: Product) {
+  if (!product.image) return [];
   return product.slug === "classic"
     ? [
         product.image,

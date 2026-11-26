@@ -14,6 +14,14 @@ const product = computed(() =>
     String(route.params.slug),
   ),
 );
+const configurable = computed(() =>
+  catalogRepository
+    .configurable("mesas")
+    .some(
+      (item) =>
+        item.slug === product.value?.slug && product.value.category === "mesas",
+    ),
+);
 const gallery = computed(() =>
   product.value ? productGallery(product.value) : [],
 );
@@ -54,8 +62,8 @@ function save() {
       }}</RouterLink
       ><span>/</span><span>{{ product.name }}</span>
     </nav>
-    <article class="split detail product-detail">
-      <div>
+    <article class="detail product-detail" :class="{ split: gallery.length }">
+      <div v-if="gallery.length">
         <figure :key="gallery[selected].src">
           <img
             :src="gallery[selected].src"
@@ -99,15 +107,15 @@ function save() {
       <div>
         <p class="eyebrow">Concepto en desarrollo</p>
         <h1>{{ product.name }}</h1>
-        <p>{{ product.description }}</p>
+        <p class="product-description">{{ product.description }}</p>
         <p v-if="product.slug === 'classic'" class="note">
           Primer concepto en estudio. La altura útil bajo las tapas, el montaje
           y la entrega se confirmarán con el prototipo.
         </p>
         <dl class="spec-list">
-          <div v-if="product.dimensions">
+          <div v-if="product.dimensions || product.format">
             <dt>Formato orientativo</dt>
-            <dd>{{ product.dimensions }}</dd>
+            <dd>{{ product.dimensions ?? product.format }}</dd>
           </div>
           <div>
             <dt>Precio orientativo</dt>
@@ -125,6 +133,21 @@ function save() {
             <dt>Disponibilidad</dt>
             <dd>En desarrollo</dd>
           </div>
+          <div v-if="product.production">
+            <dt>Prioridad de fabricación</dt>
+            <dd>
+              <RouterLink
+                class="text-link"
+                :to="{
+                  path: '/plan-de-fabricacion',
+                  hash: '#' + product.production.id,
+                }"
+              >
+                {{ product.production.sequence }} ·
+                {{ product.production.title }}
+              </RouterLink>
+            </dd>
+          </div>
         </dl>
         <div class="actions" v-if="product.slug === 'classic'">
           <RouterLink
@@ -140,7 +163,7 @@ function save() {
         </div>
         <div class="actions">
           <RouterLink
-            v-if="product.category === 'mesas'"
+            v-if="configurable"
             class="button"
             :to="{ path: '/configurador', query: { modelo: product.slug } }"
             >Configurar {{ product.name }}</RouterLink
@@ -166,6 +189,10 @@ function save() {
           >Consultar preguntas frecuentes</RouterLink
         >
       </article>
+    </section>
+    <section v-else-if="product.production" class="detail-notes">
+      <h2>Qué se validará en esta fase</h2>
+      <p>{{ product.production.check }}</p>
     </section>
     <section v-if="related.length" class="related">
       <h2>También en la colección</h2>

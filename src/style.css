@@ -338,6 +338,30 @@ figcaption,
     margin-top: 0.5rem;
   }
 }
+.product-card-text {
+  background: var(--sand);
+  border: 1px solid var(--line);
+
+  & > a {
+    display: block;
+    height: 100%;
+    padding: 1.25rem;
+  }
+
+  & .card-info {
+    margin-top: 0;
+  }
+
+  & p {
+    font-size: 0.95rem;
+  }
+}
+.catalog-phase + .catalog-phase {
+  margin-top: 2.5rem;
+}
+.product-description {
+  max-width: 64ch;
+}
 .card-image {
   position: relative;
   overflow: hidden;

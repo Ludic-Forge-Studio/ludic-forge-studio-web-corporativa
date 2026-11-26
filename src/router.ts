@@ -132,7 +132,7 @@ router.afterEach((to) => {
     ['[property="og:url"]', url],
     [
       '[property="og:image"]',
-      new URL(product?.image.src ?? "/images/hero.jpg", site).href,
+      new URL(product?.image?.src ?? "/images/hero.jpg", site).href,
     ],
   ]) {
     document.querySelector(selector)?.setAttribute("content", value);

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { catalogRepository, imagery } from "./catalog";
-const models = catalogRepository.list("mesas");
+const models = catalogRepository.configurable("mesas");
 const descriptions: Record<string, string> = {
   classic: "Convertible dining table for four to six people.",
   compact: "Square format for smaller rooms and two to four players.",

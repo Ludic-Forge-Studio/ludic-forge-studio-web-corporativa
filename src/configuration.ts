@@ -1,7 +1,7 @@
 import { catalogRepository, finishes, mats } from "./catalog.ts";
 
-const tables = catalogRepository.list("mesas");
-const accessories = catalogRepository.list("accesorios");
+const tables = catalogRepository.configurable("mesas");
+const accessories = catalogRepository.configurable("accesorios");
 
 export function normalizeQuantity(value: unknown): number {
   const quantity =

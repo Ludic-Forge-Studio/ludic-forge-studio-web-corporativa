@@ -109,8 +109,14 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
       </p>
       <div v-if="drafts.lines.length" class="commerce-grid">
         <ul class="line-list" aria-label="Artículos de tu selección">
-          <li v-for="line in drafts.lines" :key="line.id">
+          <li
+            v-for="line in drafts.lines"
+            :key="line.id"
+            :class="{ 'line-with-image': line.product.image }"
+          >
             <RouterLink
+              v-if="line.product.image"
+              :aria-label="line.product.name"
               :to="'/' + line.product.category + '/' + line.product.slug"
               ><img
                 :src="line.product.image.src"

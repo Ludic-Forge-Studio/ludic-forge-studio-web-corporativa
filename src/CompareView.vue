@@ -73,25 +73,28 @@ const selected = computed(() =>
           <tr>
             <th scope="row">Formato</th>
             <td v-for="product in selected" :key="product.slug">
-              {{ product.dimensions }}
+              {{ product.dimensions ?? product.format }}
             </td>
           </tr>
           <tr>
             <th scope="row">Uso previsto</th>
             <td v-for="product in selected" :key="product.slug">
-              {{ details[product.slug].purpose }}
+              {{ details[product.slug]?.purpose ?? product.description }}
             </td>
           </tr>
           <tr>
             <th scope="row">Rango orientativo</th>
             <td v-for="product in selected" :key="product.slug">
-              {{ product.rangeCents?.map(money).join("–") }}
+              {{ product.rangeCents?.map(money).join("–") ?? "Por definir" }}
             </td>
           </tr>
           <tr>
             <th scope="row">Antes de elegir</th>
             <td v-for="product in selected" :key="product.slug">
-              {{ details[product.slug].considerations }}
+              {{
+                details[product.slug]?.considerations ??
+                product.production?.check
+              }}
             </td>
           </tr>
         </tbody>
