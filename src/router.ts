@@ -55,6 +55,15 @@ export const router = createRouter({
       component: () => import("./CompareView.vue"),
       meta: { title: "Comparar mesas" },
     },
+    ...(import.meta.env.DEV
+      ? [
+          {
+            path: "/taller-local",
+            component: () => import("./WorkshopView.vue"),
+            meta: { title: "Taller local" },
+          },
+        ]
+      : []),
     { path: "/buscar", component: catalog, meta: { title: "Buscar" } },
     {
       path: "/:pathMatch(.*)*",
