@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { ClipboardList, ShoppingBag, UserRound } from "lucide-vue-next";
-import { useDrafts } from "./drafts";
+import { useDrafts, type DemoOrder } from "./drafts";
 import { money } from "./catalog";
 const route = useRoute();
 const router = useRouter();
@@ -11,9 +11,52 @@ const dateFormat = new Intl.DateTimeFormat("es-ES", {
   dateStyle: "medium",
   timeStyle: "short",
 });
-function submitDemo() {
+const serverEnabled =
+  import.meta.env.DEV && import.meta.env.VITE_DEMO_API === "1";
+const serverOrders = ref<DemoOrder[]>([]);
+const submitting = ref(false);
+const historyError = ref(false);
+const operation = ref<{ key: string; id: string }>();
+const orderHistory = computed(() =>
+  serverEnabled ? serverOrders.value : drafts.orders,
+);
+async function loadHistory() {
   try {
-    const reference = drafts.placeDemoOrder();
+    historyError.value = false;
+    const response = await fetch("/api/demo/orders");
+    if (!response.ok) throw new Error();
+    serverOrders.value = (await response.json()) as DemoOrder[];
+  } catch {
+    historyError.value = true;
+  }
+}
+async function submitDemo() {
+  try {
+    if (submitting.value) return;
+    orderError.value = false;
+    let reference: string | undefined;
+    if (serverEnabled) {
+      submitting.value = true;
+      const lines = drafts.lines.map(
+        ({ category, slug, quantity, options }) => ({
+          category,
+          slug,
+          quantity,
+          options,
+        }),
+      );
+      const key = JSON.stringify(lines);
+      if (operation.value?.key !== key)
+        operation.value = { key, id: crypto.randomUUID() };
+      const response = await fetch("/api/demo/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestId: operation.value.id, lines }),
+      });
+      if (!response.ok) throw new Error();
+      const order = (await response.json()) as DemoOrder;
+      reference = order.reference;
+    } else reference = drafts.placeDemoOrder();
     if (reference)
       void router.push({
         path: "/cuenta/pedidos",
@@ -21,12 +64,21 @@ function submitDemo() {
       });
   } catch {
     orderError.value = true;
+  } finally {
+    submitting.value = false;
   }
 }
 const drafts = useDrafts();
 const cart = computed(() => route.path === "/carrito");
 const checkout = computed(() => route.path === "/checkout");
 const orders = computed(() => route.path === "/cuenta/pedidos");
+watch(
+  orders,
+  (active) => {
+    if (active && serverEnabled) void loadHistory();
+  },
+  { immediate: true },
+);
 const title = computed(() =>
   cart.value
     ? "Tu selección"
@@ -152,11 +204,16 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
             class="button"
             type="button"
             @click="submitDemo"
+            :disabled="submitting"
           >
             Crear pedido de prueba
           </button>
           <p v-if="checkout" class="note">
-            Solo en este navegador. Sin cobro, envío ni datos personales.
+            {{
+              serverEnabled
+                ? "Pedido en el entorno de pruebas local. Sin cobro, envío ni datos personales."
+                : "Solo en este navegador. Sin cobro, envío ni datos personales."
+            }}
           </p>
           <p v-if="checkout && orderError" role="alert">
             No se pudo guardar el pedido. Tu selección sigue disponible.
@@ -179,10 +236,16 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
       </div>
     </template>
     <template v-else-if="orders">
-      <p>Pedidos de prueba guardados en este navegador.</p>
+      <p>
+        {{
+          serverEnabled
+            ? "Pedidos asociados a este navegador en el entorno de pruebas local."
+            : "Pedidos de prueba guardados en este navegador."
+        }}
+      </p>
       <p
         v-if="
-          drafts.orders.some(
+          orderHistory.some(
             (order) => order.reference === route.query.referencia,
           )
         "
@@ -190,8 +253,14 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
       >
         Pedido de prueba guardado.
       </p>
-      <div v-if="drafts.orders.length" class="info-grid account-grid">
-        <article v-for="order in drafts.orders" :key="order.reference">
+      <p v-if="historyError" role="alert">
+        No se pudo cargar el historial.
+        <button class="button outline" type="button" @click="loadHistory">
+          Reintentar
+        </button>
+      </p>
+      <div v-else-if="orderHistory.length" class="info-grid account-grid">
+        <article v-for="order in orderHistory" :key="order.reference">
           <h2>Prueba {{ order.reference.slice(0, 8) }}</h2>
           <p>{{ dateFormat.format(new Date(order.createdAt)) }}</p>
           <ul>

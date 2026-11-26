@@ -13,7 +13,7 @@ interface DraftLine {
   quantity: number;
   options: string[];
 }
-interface DemoOrder {
+export interface DemoOrder {
   reference: string;
   createdAt: string;
   lines: { name: string; quantity: number; options: string[] }[];

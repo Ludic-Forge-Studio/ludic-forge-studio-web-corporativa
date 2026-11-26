@@ -8,7 +8,9 @@
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit",
     "lint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev:api": "node --disable-warning=ExperimentalWarning --experimental-strip-types server/demo.mjs",
+    "test:api": "node server/demo.test.mjs"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.2.0",
