@@ -102,51 +102,40 @@ const tables = [
     "Classic",
     "160 × 100 cm",
     "Una mesa convertible para reunir de cuatro a seis personas.",
-    59900,
-    74900,
   ],
   [
     "compact",
     "Compact",
     "100 × 100 cm",
     "Formato cuadrado para espacios pequeños y partidas de dos a cuatro personas.",
-    39900,
-    49900,
   ],
   [
     "grand",
     "Grand",
     "200 × 120 cm",
     "Más superficie para partidas de seis a ocho personas.",
-    89900,
-    129900,
   ],
   [
     "lounge",
     "Lounge",
     "Formato bajo",
     "Una mesa baja para jugar desde el sofá.",
-    34900,
-    44900,
   ],
   [
     "topper",
     "Topper",
     "Formato portátil",
     "Una superficie de juego para usar sobre tu mesa.",
-    14900,
-    24900,
   ],
 ] as const;
 const baseCatalog: Omit<Product, "image">[] = tables.map(
-  ([slug, name, dimensions, description, min, max]) => ({
+  ([slug, name, dimensions, description]) => ({
     slug,
     name,
     dimensions,
     description,
     category: "mesas",
     availability: "propuesta",
-    rangeCents: [min, max],
     shipping: { fulfillment: "bajo-pedido" },
   }),
 );
@@ -178,6 +167,43 @@ baseCatalog.push(
     }),
   ),
 );
+// Rangos orientativos por unidad en euros, pendientes de validar con prototipos.
+const priceRanges: Record<string, readonly [number, number]> = {
+  classic: [599, 749],
+  compact: [399, 499],
+  topper: [149, 249],
+  grand: [899, 1299],
+  lounge: [349, 449],
+  "lounge-extensible": [499, 699],
+  "mesa-hexagonal": [849, 1199],
+  "mesa-redonda": [799, 1099],
+  "mesa-elevable": [699, 999],
+  posavasos: [25, 39],
+  portacartas: [19, 29],
+  bandejas: [29, 45],
+  "bandeja-de-dados": [29, 49],
+  "tapete-y-herrajes-de-recambio": [39, 79],
+  organizadores: [35, 55],
+  "tablero-de-jugador": [49, 79],
+  soportes: [39, 65],
+  portacopas: [25, 39],
+  "funda-para-topper": [39, 69],
+  "estacion-modular-de-director": [109, 179],
+  "torre-de-dados": [39, 69],
+  "protector-transparente-para-mapas": [35, 75],
+  "kit-de-iluminacion": [49, 89],
+  "modulo-usb-c-y-carga-inalambrica": [69, 119],
+  "elevacion-del-fondo": [199, 349],
+  "guardatapas-vertical": [79, 129],
+  "banco-guardatapas": [249, 399],
+  estanterias: [199, 399],
+  "modulos-auxiliares": [169, 299],
+  aparadores: [449, 749],
+  "banco-coordinado": [169, 269],
+  "sillas-coordinadas": [119, 199],
+  "ludotecas-y-mobiliario-a-medida": [750, 2000],
+};
+
 const catalog: Product[] = phases.flatMap(
   ({ products, id, sequence, title, check }) =>
     products.map((proposal) => {
@@ -185,6 +211,7 @@ const catalog: Product[] = phases.flatMap(
         (item) =>
           item.category === proposal.category && item.slug === proposal.slug,
       );
+      const [low, high] = priceRanges[proposal.slug];
       return {
         ...existing,
         ...proposal,
@@ -192,6 +219,7 @@ const catalog: Product[] = phases.flatMap(
           src: "/images/productos/" + proposal.slug + ".webp",
           alt: proposal.name,
         },
+        rangeCents: [low * 100, high * 100],
         availability: existing?.availability ?? "propuesta",
         shipping: existing?.shipping ?? { fulfillment: "bajo-pedido" },
         production: { id, sequence, title, check },

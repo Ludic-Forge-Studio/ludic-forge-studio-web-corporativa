@@ -36,9 +36,7 @@ const filter = computed({
 });
 const sort = computed({
   get: () =>
-    route.query.orden === "name" ||
-    (route.query.orden === "price" &&
-      (!category.value || category.value === "mesas"))
+    route.query.orden === "name" || route.query.orden === "price"
       ? route.query.orden
       : "featured",
   set: (value: string) => {
@@ -185,9 +183,7 @@ function submit() {
         <select v-model="sort">
           <option value="featured">Prioridad de fabricación</option>
           <option value="name">Nombre</option>
-          <option v-if="!category || category === 'mesas'" value="price">
-            Precio orientativo
-          </option>
+          <option value="price">Precio orientativo</option>
         </select></label
       >
     </div>
