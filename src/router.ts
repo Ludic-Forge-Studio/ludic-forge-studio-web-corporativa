@@ -64,6 +64,15 @@ export const router = createRouter({
           },
         ]
       : []),
+    {
+      path: "/en",
+      component: () => import("./EnglishView.vue"),
+      meta: {
+        title: "Convertible gaming tables",
+        description:
+          "Explore LudicForge Studio’s conceptual collection of convertible gaming tables and modular furniture.",
+      },
+    },
     { path: "/buscar", component: catalog, meta: { title: "Buscar" } },
     {
       path: "/:pathMatch(.*)*",
@@ -73,6 +82,7 @@ export const router = createRouter({
   ],
 });
 router.afterEach((to) => {
+  document.documentElement.lang = to.path === "/en" ? "en" : "es";
   const product = to.params.slug
     ? catalogRepository.find(String(to.meta.category), String(to.params.slug))
     : undefined;

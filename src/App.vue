@@ -84,6 +84,10 @@ const menu = ref(false);
     <div class="wrap foot-legal">
       <span>© {{ new Date().getFullYear() }} LudicForge Studio</span>
       <nav aria-label="Legal">
+        <RouterLink v-if="$route.path !== '/en'" to="/en" lang="en"
+          >English</RouterLink
+        >
+        <RouterLink v-else to="/" lang="es">Español</RouterLink>
         <RouterLink v-for="[label, url] in legal" :key="url" :to="url">{{
           label
         }}</RouterLink>

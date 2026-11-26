@@ -3,6 +3,7 @@ import { computed, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { catalogRepository, finishes, mats, money } from "./catalog";
 import { useDrafts } from "./drafts";
+import TablePreview from "./TablePreview.vue";
 import SwatchPicker from "./SwatchPicker.vue";
 const route = useRoute();
 const router = useRouter();
@@ -151,6 +152,12 @@ function save() {
           <span></span><span></span>
         </div>
         <p class="note">Combinación de color · {{ finish }} y {{ mat }}</p>
+        <TablePreview
+          :key="'preview-' + product.slug"
+          :model="product.slug"
+          :wood="woodColor"
+          :mat="matColor"
+        />
       </div>
       <form class="form-panel" @submit.prevent="save">
         <h2>Modelo y acabado</h2>
