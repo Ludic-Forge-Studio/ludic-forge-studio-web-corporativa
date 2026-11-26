@@ -1,10 +1,28 @@
 <script setup lang="ts">
-import { computed } from "vue";
-import { useRoute } from "vue-router";
+import { computed, ref } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import { ClipboardList, ShoppingBag, UserRound } from "lucide-vue-next";
 import { useDrafts } from "./drafts";
 import { money } from "./catalog";
 const route = useRoute();
+const router = useRouter();
+const orderError = ref(false);
+const dateFormat = new Intl.DateTimeFormat("es-ES", {
+  dateStyle: "medium",
+  timeStyle: "short",
+});
+function submitDemo() {
+  try {
+    const reference = drafts.placeDemoOrder();
+    if (reference)
+      void router.push({
+        path: "/cuenta/pedidos",
+        query: { referencia: reference },
+      });
+  } catch {
+    orderError.value = true;
+  }
+}
 const drafts = useDrafts();
 const cart = computed(() => route.path === "/carrito");
 const checkout = computed(() => route.path === "/checkout");
@@ -129,6 +147,20 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
           ><RouterLink v-else class="button outline" to="/carrito"
             >Editar selección</RouterLink
           >
+          <button
+            v-if="checkout"
+            class="button"
+            type="button"
+            @click="submitDemo"
+          >
+            Crear pedido de prueba
+          </button>
+          <p v-if="checkout" class="note">
+            Solo en este navegador. Sin cobro, envío ni datos personales.
+          </p>
+          <p v-if="checkout && orderError" role="alert">
+            No se pudo guardar el pedido. Tu selección sigue disponible.
+          </p>
         </aside>
       </div>
       <div v-else class="empty-panel">
@@ -147,8 +179,39 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
       </div>
     </template>
     <template v-else-if="orders">
-      <p>El historial de pedidos estará disponible cuando abra la tienda.</p>
-      <div class="empty-panel">
+      <p>Pedidos de prueba guardados en este navegador.</p>
+      <p
+        v-if="
+          drafts.orders.some(
+            (order) => order.reference === route.query.referencia,
+          )
+        "
+        role="status"
+      >
+        Pedido de prueba guardado.
+      </p>
+      <div v-if="drafts.orders.length" class="info-grid account-grid">
+        <article v-for="order in drafts.orders" :key="order.reference">
+          <h2>Prueba {{ order.reference.slice(0, 8) }}</h2>
+          <p>{{ dateFormat.format(new Date(order.createdAt)) }}</p>
+          <ul>
+            <li v-for="(line, index) in order.lines" :key="index">
+              {{ line.quantity }} × {{ line.name
+              }}<span v-if="line.options.length">
+                · {{ line.options.join(" · ") }}</span
+              >
+            </li>
+          </ul>
+          <p v-if="order.estimate.high">
+            Importe orientativo ·
+            {{ range(order.estimate.low, order.estimate.high) }}
+          </p>
+          <p v-if="order.estimate.unpriced">
+            Unidades pendientes de precio · {{ order.estimate.unpriced }}
+          </p>
+        </article>
+      </div>
+      <div v-else class="empty-panel">
         <ClipboardList :size="30" aria-hidden="true" />
         <h2>Aún no hay pedidos</h2>
         <p>
@@ -180,7 +243,7 @@ const range = (low: number, high: number) => money(low) + "–" + money(high);
         <article>
           <ClipboardList :size="24" aria-hidden="true" />
           <h2>Pedidos</h2>
-          <p>El historial se habilitará con la tienda.</p>
+          <p>Consulta el historial de pruebas guardado en este navegador.</p>
           <RouterLink class="text-link" to="/cuenta/pedidos"
             >Consultar pedidos</RouterLink
           >

@@ -13,30 +13,55 @@ interface DraftLine {
   quantity: number;
   options: string[];
 }
+interface DemoOrder {
+  reference: string;
+  createdAt: string;
+  lines: { name: string; quantity: number; options: string[] }[];
+  estimate: { low: number; high: number; unpriced: number };
+}
 const key = "ludicforge.selection.v1";
-function read(): DraftLine[] {
+function read(): { items: DraftLine[]; orders: DemoOrder[] } {
   try {
     const data: unknown = JSON.parse(localStorage.getItem(key) ?? "[]");
-    if (!Array.isArray(data)) return [];
-    return data.filter(
-      (item): item is DraftLine =>
-        item &&
-        typeof item.id === "string" &&
-        typeof item.category === "string" &&
-        typeof item.slug === "string" &&
-        Number.isInteger(item.quantity) &&
-        item.quantity >= 1 &&
-        item.quantity <= 20 &&
-        Array.isArray(item.options) &&
-        item.options.every((option: unknown) => typeof option === "string") &&
-        !!catalogRepository.find(item.category, item.slug),
-    );
+    const saved =
+      typeof data === "object" && data !== null && "items" in data
+        ? data
+        : null;
+    const rows = saved?.items ?? data;
+    const orders =
+      saved && "orders" in saved && Array.isArray(saved.orders)
+        ? (saved.orders as DemoOrder[])
+        : [];
+    return {
+      orders,
+      items: Array.isArray(rows)
+        ? rows.filter(
+            (item): item is DraftLine =>
+              item &&
+              typeof item.id === "string" &&
+              typeof item.category === "string" &&
+              typeof item.slug === "string" &&
+              Number.isInteger(item.quantity) &&
+              item.quantity >= 1 &&
+              item.quantity <= 20 &&
+              Array.isArray(item.options) &&
+              item.options.every(
+                (option: unknown) => typeof option === "string",
+              ) &&
+              !!catalogRepository.find(item.category, item.slug),
+          )
+        : [],
+    };
   } catch {
-    return [];
+    return { items: [], orders: [] };
   }
 }
 export const useDrafts = defineStore("drafts", () => {
-  const items = ref(read());
+  const state = ref(read());
+  const items = computed({
+    get: () => state.value.items,
+    set: (value) => (state.value.items = value),
+  });
   const lines = computed(() =>
     items.value.flatMap((item) => {
       const product = catalogRepository.find(item.category, item.slug);
@@ -57,7 +82,7 @@ export const useDrafts = defineStore("drafts", () => {
     ),
   );
   watch(
-    items,
+    state,
     (value) => {
       try {
         localStorage.setItem(key, JSON.stringify(value));
@@ -89,5 +114,35 @@ export const useDrafts = defineStore("drafts", () => {
   function remove(id: string) {
     items.value = items.value.filter((item) => item.id !== id);
   }
-  return { lines, count, estimate, add, setQuantity, remove };
+  function placeDemoOrder() {
+    if (!lines.value.length) return;
+    const order: DemoOrder = {
+      reference: crypto.randomUUID(),
+      createdAt: new Date().toISOString(),
+      lines: lines.value.map((line) => ({
+        name: line.product.name,
+        quantity: line.quantity,
+        options: [...line.options],
+      })),
+      estimate: { ...estimate.value },
+    };
+    const next = {
+      items: [],
+      orders: [order, ...state.value.orders].slice(0, 50),
+    };
+    localStorage.setItem(key, JSON.stringify(next));
+    state.value = next;
+    return order.reference;
+  }
+  const orders = computed(() => state.value.orders);
+  return {
+    lines,
+    count,
+    estimate,
+    orders,
+    add,
+    setQuantity,
+    remove,
+    placeDemoOrder,
+  };
 });

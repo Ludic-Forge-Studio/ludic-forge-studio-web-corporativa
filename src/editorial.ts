@@ -170,7 +170,7 @@ export const editorial: Record<string, Editorial> = {
       },
       {
         title: "Selección guardada",
-        text: "La selección y las opciones de producto se guardan en el almacenamiento local del navegador para poder recuperarlas en el mismo dispositivo. Puedes eliminar cada artículo desde el carrito o borrar los datos del sitio en el navegador.",
+        text: "La selección, las opciones de producto y los pedidos de prueba se guardan en el almacenamiento local del navegador para poder recuperarlas en el mismo dispositivo. Puedes eliminar cada artículo desde el carrito o borrar los datos del sitio en el navegador.",
       },
       {
         title: "Servicios futuros",
