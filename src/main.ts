@@ -1,0 +1,11 @@
+import { createApp } from "vue";
+import { createPinia } from "pinia";
+import "@fontsource/instrument-serif/latin-400.css";
+import "@fontsource/instrument-serif/latin-400-italic.css";
+import "@fontsource/dm-sans/latin-400.css";
+import "@fontsource/dm-sans/latin-600.css";
+import "./style.css";
+import "./views.css";
+import App from "./App.vue";
+import { router } from "./router";
+createApp(App).use(createPinia()).use(router).mount("#app");

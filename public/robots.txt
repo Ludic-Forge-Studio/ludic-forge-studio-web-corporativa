@@ -1,0 +1,6 @@
+User-agent: *
+Disallow: /buscar
+Disallow: /carrito
+Disallow: /checkout
+Disallow: /cuenta
+Sitemap: https://ludicforgestudio.com/sitemap.xml
