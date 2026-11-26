@@ -16,8 +16,6 @@ const query = computed(() =>
   typeof route.query.q === "string" ? route.query.q.trim() : "",
 );
 const input = ref("");
-const filter = ref("");
-const sort = ref("featured");
 const formats: Record<string, string> = {
   classic: "Comedor",
   compact: "Comedor",
@@ -30,13 +28,34 @@ const categories = {
   accesorios: "Accesorios",
   mobiliario: "Mobiliario",
 };
-watch(
-  () => route.path,
-  () => {
-    filter.value = "";
-    sort.value = "featured";
+const filter = computed({
+  get: () =>
+    typeof route.query.formato === "string" &&
+    Object.hasOwn(filters.value, route.query.formato)
+      ? route.query.formato
+      : "",
+  set: (value: string) => {
+    void router.replace({
+      query: { ...route.query, formato: value || undefined },
+    });
   },
-);
+});
+const sort = computed({
+  get: () =>
+    route.query.orden === "name" ||
+    (route.query.orden === "price" &&
+      (!category.value || category.value === "mesas"))
+      ? route.query.orden
+      : "featured",
+  set: (value: string) => {
+    void router.replace({
+      query: {
+        ...route.query,
+        orden: value === "featured" ? undefined : value,
+      },
+    });
+  },
+});
 watch(query, (value) => (input.value = value), { immediate: true });
 const results = computed(() => {
   const products = catalogRepository.list(category.value).filter((product) => {
@@ -75,9 +94,12 @@ const filters = computed(() =>
       : {},
 );
 function submit() {
-  filter.value = "";
   void router.push({
-    query: input.value.trim() ? { q: input.value.trim() } : {},
+    query: {
+      ...route.query,
+      q: input.value.trim() || undefined,
+      formato: undefined,
+    },
   });
 }
 </script>

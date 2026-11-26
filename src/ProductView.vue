@@ -30,6 +30,10 @@ const related = computed(() =>
 );
 const selected = ref(0);
 const saved = ref(false);
+function changeImage(offset: number) {
+  const count = gallery.value.length;
+  if (count > 1) selected.value = (selected.value + offset + count) % count;
+}
 watch(product, () => {
   selected.value = 0;
   saved.value = false;
@@ -63,6 +67,17 @@ function save() {
             {{ gallery[selected].alt }} · Visualización conceptual
           </figcaption>
         </figure>
+        <div v-if="gallery.length > 1" class="gallery-navigation">
+          <button class="button outline" type="button" @click="changeImage(-1)">
+            Anterior
+          </button>
+          <p class="note" aria-live="polite">
+            {{ selected + 1 }} de {{ gallery.length }}
+          </p>
+          <button class="button outline" type="button" @click="changeImage(1)">
+            Siguiente
+          </button>
+        </div>
         <div
           v-if="gallery.length > 1"
           class="thumbnails"
